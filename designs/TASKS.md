@@ -12,9 +12,7 @@ This project aims to create a robust EPUB3-compliant library for parsing, manipu
 **Priority**: high
 **Description**: Set up the basic project structure and configuration files.
 **Details**:
-- Create directory structure
-- Initialize version control
-- Set up package.json with basic dependencies
+- Create directory structures
 - Configure development environment and tooling
 - Create README with project overview
 
