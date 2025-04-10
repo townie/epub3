@@ -1,0 +1,194 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+ ---
+description: Guidelines for implementing EPUB3 standards in digital publications
+globs: src/**/*.{html,xhtml,xml,css,opf,ncx}, **/*.epub
+alwaysApply: false
+---
+
+- **EPUB3 Core Components**
+  - **Package Document (.opf)**
+    - Required metadata includes `dc:identifier`, `dc:title`, and `dc:language`
+    - The manifest must enumerate all publication resources
+    - The spine defines the reading order with `itemref` elements
+    - Use `<meta property="dcterms:modified">` for last modified date
+    ```xml
+    <!-- ✅ DO: Include required metadata -->
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:identifier id="pub-id">urn:isbn:9780123456789</dc:identifier>
+      <dc:title>Publication Title</dc:title>
+      <dc:language>en</dc:language>
+      <meta property="dcterms:modified">2023-01-01T00:00:00Z</meta>
+    </metadata>
+    
+    <!-- ❌ DON'T: Omit required metadata -->
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:title>Publication Title</dc:title>
+    </metadata>
+    ```
+
+  - **Content Documents (XHTML/SVG)**
+    - Must be valid XHTML or SVG
+    - Use the `epub:type` attribute for structural semantics
+    - XHTML must use the proper doctype and namespace
+    ```html
+    <!-- ✅ DO: Use proper doctype and namespaces -->
+    <!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" 
+          xmlns:epub="http://www.idpf.org/2007/ops">
+      <head><title>Chapter 1</title></head>
+      <body>
+        <section epub:type="chapter">
+          <h1>Chapter Title</h1>
+        </section>
+      </body>
+    </html>
+    
+    <!-- ❌ DON'T: Use invalid HTML structure or omit namespaces -->
+    <html>
+      <head><title>Chapter 1</title></head>
+      <body>
+        <section>
+          <h1>Chapter Title</h1>
+        </section>
+      </body>
+    </html>
+    ```
+
+  - **Container Format (OCF)**
+    - ZIP-based with specific requirements
+    - Must include `mimetype` file with content `application/epub+zip`
+    - Must have `META-INF/container.xml` pointing to the package document
+    - File paths should use UTF-8, avoiding problematic characters
+
+  - **Navigation Document (toc.xhtml)**
+    - Must include a `nav` element with `epub:type="toc"`
+    - Should use `hidden` attribute for nav elements not meant for display
+    - Can include page list and landmarks navigation
+    ```html
+    <!-- ✅ DO: Define proper navigation structure -->
+    <nav epub:type="toc" id="toc">
+      <h1>Table of Contents</h1>
+      <ol>
+        <li><a href="chapter01.xhtml">Chapter 1</a></li>
+        <li><a href="chapter02.xhtml">Chapter 2</a></li>
+      </ol>
+    </nav>
+    
+    <!-- ❌ DON'T: Use non-standard navigation structure -->
+    <div class="toc">
+      <h1>Contents</h1>
+      <ul>
+        <li><a href="chapter01.xhtml">Chapter 1</a></li>
+      </ul>
+    </div>
+    ```
+
+- **Content Requirements**
+  - **Core Media Types**
+    - Use only supported media types to ensure compatibility
+    - Common types: XHTML, SVG, CSS, PNG, JPEG, GIF, WebP, MP3, MP4
+    - For unsupported types, provide fallbacks via the manifest
+  
+  - **CSS Support**
+    - Use standard CSS properties with vendor prefixes for specialized features
+    - Support for advanced typography with `-epub-` prefixed properties
+    - Use media queries for responsive layouts
+    ```css
+    /* ✅ DO: Use appropriate CSS constructs */
+    @media (min-width: 600px) {
+      body { font-size: 1.2em; }
+    }
+    
+    /* For vertical writing modes */
+    .vertical-text {
+      -epub-writing-mode: vertical-rl;
+      writing-mode: vertical-rl;
+    }
+    
+    /* ❌ DON'T: Rely only on non-standard properties */
+    .vertical-text {
+      -epub-writing-mode: vertical-rl;
+    }
+    ```
+
+  - **Scripting**
+    - Scripts must use the `scripted` property in the manifest
+    - Provide fallbacks for non-scripted reading systems
+    - Ensure accessibility when using interactive elements
+    ```html
+    <!-- ✅ DO: Provide fallbacks for scripted content -->
+    <figure id="interactive-chart">
+      <script src="chart.js"></script>
+      <noscript>
+        <img src="chart-static.png" alt="Bar chart showing sales data" />
+      </noscript>
+    </figure>
+    ```
+
+- **Layout Control**
+  - **Fixed Layouts**
+    - Specify fixed layout with `rendition:layout` property
+    - Define viewport dimensions for content documents
+    - Control orientation with `rendition:orientation`
+    ```xml
+    <!-- ✅ DO: Specify fixed layout properties -->
+    <metadata>
+      <meta property="rendition:layout">pre-paginated</meta>
+      <meta property="rendition:orientation">landscape</meta>
+      <meta property="rendition:spread">none</meta>
+    </metadata>
+    ```
+  
+  - **Reflowable Layouts**
+    - Default layout method (don't need explicit properties)
+    - Use responsive design principles
+    - Control content flow direction with appropriate properties
+
+- **Media Overlays (Read Aloud)**
+  - Use SMIL documents to synchronize text and audio
+  - Reference fragments in content documents for precise timing
+  - Include navigation controls for skipping and escaping
+  ```xml
+  <!-- ✅ DO: Structure media overlay properly -->
+  <smil xmlns="http://www.w3.org/ns/SMIL">
+    <body>
+      <seq id="seq_1">
+        <par id="par_1">
+          <text src="chapter01.xhtml#p1"/>
+          <audio src="audio/chapter01.mp3" clipBegin="0s" clipEnd="10.5s"/>
+        </par>
+      </seq>
+    </body>
+  </smil>
+  ```
+
+- **Accessibility Considerations**
+  - Provide complete alternative text for images
+  - Use semantic markup to improve document structure
+  - Ensure proper reading order matches visual presentation
+  - Follow [WCAG](https://www.w3.org/TR/WCAG21/) guidelines
+  - Include accessibility metadata in the package document
+  ```xml
+  <!-- ✅ DO: Include accessibility metadata -->
+  <metadata>
+    <meta property="schema:accessibilityFeature">structuralNavigation</meta>
+    <meta property="schema:accessibilityFeature">alternativeText</meta>
+    <meta property="schema:accessibilityHazard">none</meta>
+    <meta property="schema:accessMode">textual</meta>
+    <meta property="schema:accessMode">visual</meta>
+    <meta property="schema:accessModeSufficient">textual</meta>
+  </metadata>
+  ```
+
+- **Testing and Validation**
+  - Validate EPUB packages with [EPUBCheck](https://github.com/w3c/epubcheck)
+  - Test across multiple reading systems
+  - Verify both reflowable and fixed-layout rendering
+  - Ensure media overlays sync correctly with content
+  - Check accessibility with dedicated tools
+
+For complete details on the EPUB3 specification, refer to the [W3C EPUB 3.3 Specification](https://www.w3.org/TR/epub-33/).
