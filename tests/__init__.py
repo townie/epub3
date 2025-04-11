@@ -1,1 +1,1 @@
-"""Test package for mypackage."""
+"""Tests for the epub3 package."""

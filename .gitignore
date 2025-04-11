@@ -8,6 +8,7 @@ dev-debug.log
 
 # Dependency directories
 node_modules/
+epub3.egg-info/
 
 # Environment variables
 .env
@@ -21,9 +22,11 @@ node_modules/
 *.sln
 *.sw?
 
+__pycache__/
+
 # OS specific
 .DS_Store
 
 # Task files
 tasks.json
-tasks/ 
+tasks/
